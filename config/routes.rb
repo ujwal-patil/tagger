@@ -1,12 +1,15 @@
 Rails.application.routes.draw do
  	namespace :tagger do
- 		scope	":instance", instance: Regexp.union(Tagger.instances.keys) do 
-		  resources :instances, only: [:index] do
-		    collection do
+		resources :instances, instance_id: Regexp.union(Tagger.instances.map(&:name)), only: [:index] do
+	 		resources :locales do
+		    member do
 		      get :delta
+		      get :complete
 		      get :tag
 		    end
-		  end
+		 	end
  		end
  	end
+
+ 	get '/tagger' => 'tagger/instances#index'
 end

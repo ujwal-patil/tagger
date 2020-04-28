@@ -1,5 +1,7 @@
 require "tagger/version"
 require "tagger/file"
+require "tagger/instance"
+require "tagger/locale"
 require "tagger/rails/engine"
 
 module Tagger
@@ -13,8 +15,7 @@ module Tagger
   DEFAULT_OPTIONS = {
     file_directory_path: '',
     file_type: :json,
-    keep_recent_tags: 10,
-    parent_controller: 'ApplicationController'
+    keep_recent_tags: 10
   }
 
 
@@ -24,10 +25,18 @@ module Tagger
       yield(self)
     end
 
+    def parent_controller
+      class_variable_get("@@parent_ctr")
+    end
+
+    def parent_controller=(name='ApplicationController')
+      class_variable_set("@@parent_ctr", name)
+    end
+
     def instances
       class_variables.map do |m|
-        [m.to_s.remove('@@'), class_variable_get(m)]
-      end.to_h.with_indifferent_access
+        Tagger::Instance.new(class_variable_get(m), m.to_s.remove('@@')) unless m.to_s == '@@parent_ctr'
+      end.compact
     end
 
     def instance(name)
