@@ -9,13 +9,17 @@
 					<div class="card mb-3">
 					  <div class="card-header">
 					  	<div class="row">
-					  		<div class="col-md-8">
+					  		<div class="col-md-10">
 					  			<%= "#{instance.name.titleize} > #{locale.code}"  %>
+
+					  			<span class="float-right" id="<%= "#{instance.name}-#{locale.code}" %>"></span>
 					  		</div>
-					  		<div class="col-md-4">
-					  			<%= link_to tag_tagger_instance_locale_path(instance_id: instance.name, id: locale.code), class: 'btn btn-sm btn-outline-success float-right' do %>
-					  				<i class="zmdi zmdi-tag"></i> Generate Tag
-					  			 <% end %>
+					  		<div class="col-md-2">
+					  			<%= link_to tag_tagger_instance_locale_path(instance_id: instance.name, id: locale.code), 
+					  				class: 'btn btn-sm btn-outline-success float-right generate-tag',
+					  				'data-target': "##{instance.name}-#{locale.code}" do %>
+					  					<i class="zmdi zmdi-tag"></i> Generate Tag
+					  			<% end %>
 					  		</div>
 					  	</div>
 					  </div>
@@ -56,8 +60,3 @@
     </div>
   </div>
 </div>
-
-
-<script type="text/javascript">
-	$(".delta-slider").slider();
-</script>

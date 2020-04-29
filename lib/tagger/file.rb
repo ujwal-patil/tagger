@@ -29,7 +29,7 @@ module Tagger
     end
 
     def current_file_path
-      Dir[::File.join(instance.file_directory_path, "root.#{locale}.*")].last
+      Dir[::File.join(instance.file_directory_path, "*root.#{locale}.#{instance.file_type}")].last
     end
 
     private
