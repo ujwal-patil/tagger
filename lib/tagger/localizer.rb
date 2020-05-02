@@ -1,15 +1,5 @@
 module Tagger
   class Localizer
-    # Add source directory path where your locales files are located
-    SOURCE_DIRECTORY_PATH = Rails.root.join('app/assets/javascripts/dashboard-v2/locale/')
-
-    # For Reseller Dashboard
-    # SOURCE_DIRECTORY_PATH = Rails.root.join('app/assets/javascripts/reseller-dashboard/locale/')
-
-    # For Server Side Dashboard
-    # SOURCE_DIRECTORY_PATH = Rails.root.join('config/locales/')
-
-    FILE_FORMAT = :json # (:json, :yml)
 
     # keep_recent_releases_count - will keep 3 recent releases of each locale root file
     # in /releases/ directory relative to specified source_directory_path.
@@ -20,37 +10,73 @@ module Tagger
     # Ex config.ignore_source_directory_files = %w(time-ago)
     IGNORE_SOURCE_DIRECTORY_FILES = %w(time-ago)
 
-    # Locale::FrontendLocalizer.new(:en).update_files
     def initialize(locale)
-      if I18n.available_locales.include?(locale.to_sym)
-        @locale = locale
-        @word_counter = Locale::WordCounter.new
-        @current_file_version = fetch_current_file_version
-        @current_file_path = current_locale_file_path
-      else
-        raise I18n::InvalidLocale.new(locale)
-      end
+      @locale = locale
+      @instance = locale.instance
+      @code = locale.code
+      @word_counter = Tagger::WordCounter.new
+
+      @current_file_version = fetch_current_file_version
+      @current_file_path = current_locale_file_path
     end
 
-    attr_reader :current_file_version
+    attr_reader :current_file_version, :locale, :instance, :code
 
-    def extract
-      keys_and_values = {}
+    def range(range)
+      range.split(',')
+      (range.first..range.last)
+    end
+
+    def delta(tag_id)
+      tag_point_keys_and_values = {}
+      delta_point_keys_and_values = {}
+      from_tag_keys_and_values = {}
+
       en_keys_and_values = load_full_keys_and_values(current_locale_file_path('en'))
       locale_keys_and_values = load_full_keys_and_values(current_locale_file_path)
 
-      puts "Updating.."
+      if tag_id && tag_id != 'TODAY'
+        file_path = find_tag(tag_id).file_path
+        from_tag_keys_and_values = load_full_keys_and_values(file_path)
+      end
+
       en_keys_and_values.each do |full_key, value|
-        if locale_keys_and_values[full_key].nil? || locale_keys_and_values[full_key] == value
-          keys_and_values[full_key] = value
+        if (locale_keys_and_values[full_key].nil? || locale_keys_and_values[full_key] == value)
+          tag_point_keys_and_values[full_key] = value
+
+          unless from_tag_keys_and_values.has_key?(full_key)
+            delta_point_keys_and_values[full_key] = value
+          end
         end
       end
 
-      keys_and_values_to_file(keys_and_values, File.join(SOURCE_DIRECTORY_PATH, "delta.#{@locale}.#{FILE_FORMAT}"))
-      puts 'Done.'
+      if tag_id && tag_id != 'TODAY'
+        if tagable?(tag_point_keys_and_values)
+          create_tag_point(tag_point_keys_and_values)
+        end
+
+        delta_point_keys_and_values
+      else
+        if tagable?(tag_point_keys_and_values)
+          create_tag_point(tag_point_keys_and_values)
+        else
+          tag_file_for(tag_point_keys_and_values)
+        end
+      end
+     
     end
 
-    def update_files
+    def find_tag(tag_id)
+      locale.tags.find{|tag| tag.hexdigest == tag_id}
+    end
+
+    def tag_file_for(keys_and_values)
+      hex = hexdigest(keys_and_values)
+      tags_directory = ::File.join(instance.tags_directory, "*.#{hex}.#{code}.#{instance.file_type}")
+      Dir[tags_directory].first
+    end
+
+    def upload(file)
       # 1) Get file contents as full keys and values
       keys_and_values = load_full_keys_and_values(current_locale_file_path)
 
@@ -60,7 +86,8 @@ module Tagger
       # 3) Update existing key values with new file values
       puts "Updating.."
 
-      new_file_phrases.each do |full_key, value|
+      uploaded_file_key_values = load_full_keys_and_values(file.path)
+      uploaded_file_key_values.each do |full_key, value|
         print "."
         @word_counter.update(keys_and_values[full_key], value)
 
@@ -83,6 +110,33 @@ module Tagger
     end
 
     private
+
+    def create_tag_point(keys_and_values)
+      tag_file_name = "#{tag_name}.#{Time.now.to_i}.#{hexdigest(keys_and_values)}.#{code}.#{instance.file_type}"
+      tag_file_name = ::File.join(instance.file_directory_path, 'tags', tag_file_name)
+      keys_and_values_to_file(keys_and_values, tag_file_name)
+      tag_file_name
+    end
+
+    def tagable?(keys_and_values)
+      available_hexdigests.exclude?(hexdigest(keys_and_values))
+    end
+
+    def tag_name
+      Time.now.strftime("%^b%d")
+    end
+
+    # t1.<hexdigest>.en.json
+    def available_hexdigests
+      tags_directory = ::File.join(instance.tags_directory, "*.#{code}.#{instance.file_type}")
+      Dir[tags_directory].map do |tag_file_path|
+        tag_file_path.remove(instance.tags_directory).split('.').third
+      end
+    end
+
+    def hexdigest(contents)
+      Digest::SHA1.new.hexdigest(contents.to_s)
+    end
 
     def new_file_phrases
       keys_hash = {}
@@ -110,8 +164,8 @@ module Tagger
       keys_and_values.each do |dot_key, value|
         h = result
 
-        keys = if FILE_FORMAT == :yml then
-          [@locale.to_s] + dot_key.split(".")
+        keys = if instance.file_type == :yml then
+          [code.to_s] + dot_key.split(".")
         else
           dot_key.split(".")
         end
@@ -126,9 +180,9 @@ module Tagger
         end
       end
 
-      final = if FILE_FORMAT == :json
+      final = if instance.file_type == :json
         JSON.pretty_generate(result)
-      elsif FILE_FORMAT == :yml
+      elsif instance.file_type == :yml
         YAML.dump(result)
       end
 
@@ -139,10 +193,10 @@ module Tagger
 
     def other_locale_files_belongs_to_current_locale
       blacklisted_file_paths = IGNORE_SOURCE_DIRECTORY_FILES.map do |file_name|
-        File.join(SOURCE_DIRECTORY_PATH, "#{file_name}.#{@locale}.#{FILE_FORMAT}")
+        File.join(instance.file_directory_path, "#{file_name}.#{code}.#{instance.file_type}")
       end
 
-      Dir[File.join(SOURCE_DIRECTORY_PATH, "*.#{@locale}.#{FILE_FORMAT}")] - [blacklisted_file_paths, current_locale_file_path].flatten
+      Dir[File.join(instance.file_directory_path, "*.#{code}.#{instance.file_type}")] - [blacklisted_file_paths, current_locale_file_path].flatten
     end
 
     def remove_invalid_files
@@ -171,17 +225,17 @@ module Tagger
     end
 
     def current_locale_releases
-      Dir[File.join(SOURCE_DIRECTORY_PATH, 'releases', "*.#{@locale}.#{FILE_FORMAT}")]
+      Dir[File.join(instance.file_directory_path, 'releases', "*.#{code}.#{instance.file_type}")]
     end
 
     def next_root_version_path
       # <latest_version>.root.fr.json
-      File.join(SOURCE_DIRECTORY_PATH, "v#{next_file_version}.root.#{@locale}.#{FILE_FORMAT}")
+      File.join(instance.file_directory_path, "v#{next_file_version}.root.#{code}.#{instance.file_type}")
     end
 
     def recent_version_path
       #<previous_version>.<Current Time stamp>.root.fr.json
-      File.join(SOURCE_DIRECTORY_PATH, "releases", "#{current_file_version}.#{Time.now.strftime("%Y_%m_%d_T_%H_%M_%S")}.#{@locale}.#{FILE_FORMAT}")
+      File.join(instance.file_directory_path, "releases", "#{current_file_version}.#{Time.now.strftime("%Y_%m_%d_T_%H_%M_%S")}.#{code}.#{instance.file_type}")
     end
 
     def next_file_version
@@ -189,7 +243,7 @@ module Tagger
     end
 
     def fetch_current_file_version
-      current_locale_file_path.sub(SOURCE_DIRECTORY_PATH.to_s, '').scan(/v[0-9]*/).first || 'v1'
+      current_locale_file_path.sub(instance.file_directory_path.to_s, '').scan(/v[0-9]*/).first || 'v1'
     end
 
     def load_full_keys_and_values(file_path)
@@ -197,28 +251,28 @@ module Tagger
       keys_and_values = {}
 
       begin
-        json = if FILE_FORMAT == :json
+        json = if instance.file_type == :json
           JSON.parse(File.read(file_path))
-        elsif FILE_FORMAT == :yml
+        elsif instance.file_type == :yml
           YAML.load_file(file_path)
         end
 
       rescue Exception => e
-        puts "\e[31mFailed to parse #{FILE_FORMAT} file #{file_path}, Please ensure before merge \e[0m"
+        puts "\e[31mFailed to parse #{instance.file_type} file #{file_path}, Please ensure before merge \e[0m"
       end
 
       traverse(json) do |keys, value|
         keys = keys.map{|m| m.split('.')}.flatten
 
-        _keys = (FILE_FORMAT == :yml ? keys[1..-1] : keys)
+        _keys = (instance.file_type == :yml ? keys[1..-1] : keys)
         keys_and_values[_keys * '.'] = value
       end
 
       keys_and_values
     end
 
-    def current_locale_file_path(locale = nil)
-      Dir[File.join(SOURCE_DIRECTORY_PATH, "*root.#{locale || @locale}.#{FILE_FORMAT}")].last
+    def current_locale_file_path(_code = nil)
+      Dir[File.join(instance.file_directory_path, "*root.#{_code || code}.#{instance.file_type}")].last
     end
 
     def traverse(obj, keys = [], &block)
@@ -238,7 +292,7 @@ module Tagger
 
     # def blacklisted_phrases_keys
     #   IGNORE_SOURCE_DIRECTORY_FILES.map do |file_name|
-    #     load_locale_file(File.join(SOURCE_DIRECTORY_PATH, "#{file_name}.#{@locale}.#{FILE_FORMAT}")).keys
+    #     load_locale_file(File.join(instance.file_directory_path, "#{file_name}.#{code}.#{instance.file_type}")).keys
     #   end.flatten
     # end
   end

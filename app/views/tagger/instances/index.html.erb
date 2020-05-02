@@ -15,40 +15,61 @@
 					  			<span class="float-right" id="<%= "#{instance.name}-#{locale.code}" %>"></span>
 					  		</div>
 					  		<div class="col-md-2">
-					  			<%= link_to tag_tagger_instance_locale_path(instance_id: instance.name, id: locale.code), 
-					  				class: 'btn btn-sm btn-outline-success float-right generate-tag',
-					  				'data-target': "##{instance.name}-#{locale.code}" do %>
-					  					<i class="zmdi zmdi-tag"></i> Generate Tag
-					  			<% end %>
+					  			<%= link_to complete_tagger_instance_locale_path(instance_id: instance.name, id: locale.code), class: 'btn btn-sm btn-outline-primary float-right' do %>
+					  					<i class="zmdi zmdi-download"></i>
+					  			 	<% end %>
 					  		</div>
 					  	</div>
 					  </div>
 					  <div class="card-body">
-					  	<form>
-						  	<div class="row">
+					  	<form id="<%= "form-#{instance.name}-#{locale.code}" %>">
+						  	<div class="row mb-3">
 						  		<div class="col-md-9">
-						  			<% if locale.tags.length >= 2 %>
-											<input
-												class="delta-slider"
-												type="text"
-												data-slider-value="[1, <%= locale.tags.length %>]" 
-												data-slider-ticks="<%= (1..locale.tags.length).to_a %> "
-												data-slider-ticks-labels='<%= locale.tags.map(&:name) %>' 
-												data-slider-lock-to-ticks="true"/>
+						  			<% if locale.tags.length > 0 %>
+											<div class="btn-group btn-group-sm btn-group-toggle" data-toggle="buttons">
+												<% locale.tags.each do |tag| %>
+												  <label class="btn btn-outline-primary">
+												    <input type="radio" name="from_tag" value="<%= tag.hexdigest %>"> 
+												    From <%= tag.name %>
+												  </label>
+											 	<% end %>
+
+											 	<label class="btn btn-outline-primary active">
+											    <input type="radio" name="from_tag" value="TODAY" checked> 
+											    Till Now
+											  </label>
+											</div>
 										<% else %>
-											No Tags are there for locale <%= locale.code %>.
+											No Tag points are generated yet for locale <b><%= locale.code %></b>, you can start with download delta option below.
 										 <% end %>
 						  		</div>
 						  		<div class="col-md-3">
-						  			<%= link_to delta_tagger_instance_locale_path(instance_id: instance.name, id: locale.code), class: 'btn btn-sm btn-outline-primary' do %>
-					  					<i class="zmdi zmdi-download"></i> Delta
-					  			 	<% end %>
+						  		
 
-						  			<%= link_to complete_tagger_instance_locale_path(instance_id: instance.name, id: locale.code), class: 'btn btn-sm btn-outline-primary' do %>
-					  					<i class="zmdi zmdi-download"></i> Complete
-					  			 	<% end %>
-									<button type="button" class="btn btn-sm btn-outline-secondary">Upload</button>
 						  		</div>
+						  	</div>
+
+						  	<div class="row">
+					  			<div class="col-md-3">
+						  			<%= link_to delta_tagger_instance_locale_path(instance_id: instance.name, id: locale.code), 
+						  				class: 'btn btn-outline-primary downoad-delta',
+						  				'data-url': delta_tagger_instance_locale_path(instance_id: instance.name, id: locale.code),
+						  				'data-target': "#form-#{instance.name}-#{locale.code}" do %>
+					  						<i class="zmdi zmdi-download"></i> Delta
+					  			 	<% end %>	
+					  			</div>
+						  		<div class="col-md-9">
+						  			<div class="input-group">
+										  <div class="custom-file">
+										    <input type="file" class="custom-file-input" id="<%= "ig-#{instance.name}-#{locale.code}" %>">
+										    <label class="custom-file-label" for="<%= "ig-#{instance.name}-#{locale.code}" %>" aria-describedby="<%= "iga-#{instance.name}-#{locale.code}" %>"><%= "Choose #{instance.name.titleize} #{locale.code} file" %></label>
+										  </div>
+										  <div class="input-group-append">
+										    <button class="input-group-text btn btn-default" id="<%= "iga-#{instance.name}-#{locale.code}" %>">Upload</button>
+										  </div>
+										</div>
+
+									</div>
 						  	</div>
 					  	</form>
 					  </div>

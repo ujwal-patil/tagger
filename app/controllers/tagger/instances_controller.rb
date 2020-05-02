@@ -1,14 +1,7 @@
-class Tagger::InstancesController < Tagger.parent_controller.constantize
-	layout "tagger"
-
+class Tagger::InstancesController < Tagger::BaseController
 
 	def index
-		# @tags = Tagger::File.new(params[:locale], instance_name).tags
+		# @tags = Tagger::Locale.new(params[:locale], instance_name).tags
 	end
 
-	private
-	
-	def instance_name
-		params[:instance] && (raise Tagger::NoInstanceFoundError.new("instance not found!"))
-	end
 end

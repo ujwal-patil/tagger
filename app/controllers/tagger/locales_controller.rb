@@ -1,39 +1,44 @@
-class Tagger::LocalesController < Tagger.parent_controller.constantize
-	layout "tagger"
-
+class Tagger::LocalesController < Tagger::BaseController
 
 	def index
-		# @tags = Tagger::File.new(params[:locale], instance_name).tags
+		# @tags = Tagger::Locale.new(params[:locale], instance_name).tags
 	end
 
 	def delta
-		file = Tagger::File.new(locale, instance_name).delta(delta_params[:range])
-		send_file(file, filename: filename)
+		data = tagger_locale.delta(params[:from_tag])
+		if data.is_a?(Hash)
+			temp = Tempfile.new
+			temp.puts(data.to_json)
+			temp.flush
+
+			file_path = temp.path
+		else
+			file_path = data
+		end
+
+		send_file(file_path, filename: filename)
 	end
 
 	def complete
-		tagger_file = Tagger::File.new(locale, instance_name)
-		file_name = "#{instance_name}-complete-#{locale}.#{tagger_file.instance.file_type}"
-
-		send_file(tagger_file.current_file_path, filename: file_name)
+		send_file(tagger_locale.current_file_path, filename: filename)
 	end
 
-	def tag
-		if Tagger::File.new(locale, instance_name).tag
-			render json: {message: "#{locale} file tagged successfully."}, status: :ok
-		else
-			render json: {message: "No change detected in #{locale} file"}, status: :ok
-		end
+	def upload
+		tagger_locale.upload(params[:file])
 	end
 
 	private
 
-	def delta_params
-		params.require(:instance).permit(:range)
+	def filename
+		"#{instance_name}-#{action_name}-#{locale}.#{tagger_locale.instance.file_type}"
 	end
 
-	def instance_name
-		params[:instance_id] || (raise Tagger::NoInstanceFoundError.new("instance not found!"))
+	def tagger_locale
+		@tagger_locale ||= Tagger::Locale.new(locale, instance_name)
+	end
+
+	def delta_params
+		params.require(:instance).permit(:range)
 	end
 
 	def locale

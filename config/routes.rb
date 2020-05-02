@@ -5,7 +5,7 @@ Rails.application.routes.draw do
 		    member do
 		      get :delta
 		      get :complete
-		      put :tag
+		      put :upload
 		    end
 		 	end
  		end

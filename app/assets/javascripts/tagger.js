@@ -17,20 +17,12 @@ $.ajaxPrefilter(function(options, originalOptions, jqXHR){
 $(document).ready(function () {
 	$(".delta-slider").slider();
 
-	$(".generate-tag").on('click', function (event) {
+	$(".downoad-delta").on('click', function (event) {
 		event.stopPropagation();
-		$.ajax({
-			url: event.target.href,
-			type: 'put',
-			success: function(result){
-		    	showMessage(event.target.dataset.target, result.message, 'success')
-		  	},
-		  	error: function (result) {
-		  		showMessage(event.target.dataset.target, result.message, 'danger')
-		  	}
-		});
-
-		return false;
+		if (event.target.dataset.target) {
+			var formTag = $(event.target.dataset.target).serialize();
+			event.target.href = `${event.target.dataset.url}?${formTag}`;
+		}
 	});
 })
 

@@ -1,6 +1,7 @@
 require "tagger/version"
-require "tagger/file"
+require "tagger/word_counter"
 require "tagger/instance"
+require "tagger/localizer"
 require "tagger/locale"
 require "tagger/rails/engine"
 
@@ -36,6 +37,12 @@ module Tagger
     def instances
       class_variables.map do |m|
         Tagger::Instance.new(class_variable_get(m), m.to_s.remove('@@')) unless m.to_s == '@@parent_ctr'
+      end.compact
+    end
+
+    def configured_instances
+      class_variables.map do |m|
+        m.to_s.remove('@@') unless m.to_s == '@@parent_ctr'
       end.compact
     end
 
