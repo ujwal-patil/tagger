@@ -23,7 +23,7 @@
 								<div class="card-body">
 									<%= form_tag upload_tagger_instance_locale_path(instance_id: instance.name, id: locale.code), multipart: true, :'accept-charset' => 'UTF-8', id: "form-#{instance.name}-#{locale.code}" do %>
 										<div class="row mb-3">
-											<div class="col-md-9">
+											<div class="col-md-12">
 												<% if locale.tags.length > 0 %>
 												<div class="btn-group btn-group-sm btn-group-toggle" data-toggle="buttons">
 													<% locale.tags.each do |tag| %>
@@ -40,9 +40,6 @@
 												<% else %>
 												No Tag points are generated yet for locale <b><%= locale.code %></b>, you can start with download delta option below.
 												<% end %>
-											</div>
-											<div class="col-md-3">
-												
 											</div>
 										</div>
 										<div class="row">
