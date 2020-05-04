@@ -44,7 +44,7 @@ class Tagger::LocalesController < Tagger::BaseController
 	private
 
 	def filename
-		"#{instance_name}-#{action_name}-#{locale}.#{tagger_locale.instance.file_type}"
+		"#{instance_name}-#{action_name}.#{locale}.#{tagger_locale.instance.file_type}"
 	end
 
 	def tagger_locale

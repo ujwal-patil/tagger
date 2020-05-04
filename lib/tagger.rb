@@ -1,5 +1,6 @@
 require "tagger/version"
 require "tagger/word_counter"
+require "tagger/tag"
 require "tagger/instance"
 require "tagger/localizer"
 require "tagger/locale"
@@ -17,9 +18,10 @@ module Tagger
   DEFAULT_OPTIONS = {
     file_directory_path: '',
     file_type: :json,
-    keep_recent_tags: 10
+    keep_recent_tags: 5,
+    keep_recent_releases: 5,
+    ignore_source_directory_files: []
   }
-
 
 
   class << self

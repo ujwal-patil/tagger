@@ -4,6 +4,8 @@ module Tagger
 			@file_directory_path = config.file_directory_path
 			@keep_recent_tags = config.keep_recent_tags
 			@file_type = config.file_type
+			@keep_recent_releases = config.keep_recent_releases
+			@ignore_source_directory_files = config.ignore_source_directory_files
 
 			if Tagger.configured_instances.include?(name.to_s)
 				@name = name
@@ -13,7 +15,7 @@ module Tagger
       end
 		end
 
-		attr_reader :file_directory_path, :keep_recent_tags, :file_type, :name
+		attr_reader :name, :file_directory_path, :keep_recent_tags, :keep_recent_releases, :ignore_source_directory_files, :file_type
 
 		def tags_directory
 			::File.join(file_directory_path, 'tags')

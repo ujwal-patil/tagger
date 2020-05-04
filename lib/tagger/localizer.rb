@@ -1,15 +1,6 @@
 module Tagger
   class Localizer
 
-    # keep_recent_releases_count - will keep 3 recent releases of each locale root file
-    # in /releases/ directory relative to specified source_directory_path.
-    KEEP_RECENT_RELEASES_COUNT = 3
-
-    # once you update files by rake, all invalid unnecessary files in source_directory_path will be deleted.
-    # If you wants to prevent files from source dir, add name of file in ignore_source_directory_files array
-    # Ex config.ignore_source_directory_files = %w(time-ago)
-    IGNORE_SOURCE_DIRECTORY_FILES = %w(time-ago)
-
     def initialize(locale)
       @locale = locale
       @instance = locale.instance
@@ -21,11 +12,6 @@ module Tagger
     end
 
     attr_reader :current_file_version, :locale, :instance, :code
-
-    def range(range)
-      range.split(',')
-      (range.first..range.last)
-    end
 
     def delta(tag_id)
       tag_point_keys_and_values = {}
@@ -116,6 +102,10 @@ module Tagger
       tag_file_name = "#{tag_name}.#{Time.now.to_i}.#{hexdigest(keys_and_values)}.#{code}.#{instance.file_type}"
       tag_file_name = ::File.join(instance.file_directory_path, 'tags', tag_file_name)
       keys_and_values_to_file(keys_and_values, tag_file_name, true)
+
+      recent_tag_ids = locale.tags.last(instance.keep_recent_tags).map(&:hexdigest)
+      locale.tags.select{|tag| recent_tag_ids.exclude?(tag.hexdigest)}.each(&:remove)
+
       tag_file_name
     end
 
@@ -124,7 +114,7 @@ module Tagger
     end
 
     def tag_name
-      Time.now.strftime("%^b%d")
+      Time.now.strftime("%^b%d-%T")
     end
 
     # t1.<hexdigest>.en.json
@@ -137,16 +127,6 @@ module Tagger
 
     def hexdigest(contents)
       Digest::SHA1.new.hexdigest(contents.to_s)
-    end
-
-    def new_file_phrases
-      keys_hash = {}
-
-      other_locale_files_belongs_to_current_locale.each do |file_path|
-        keys_hash.merge!(load_full_keys_and_values(file_path))
-      end
-
-      keys_hash
     end
 
     def update_as_next_root_version(keys_and_values)
@@ -197,7 +177,7 @@ module Tagger
     end
 
     def other_locale_files_belongs_to_current_locale
-      blacklisted_file_paths = IGNORE_SOURCE_DIRECTORY_FILES.map do |file_name|
+      blacklisted_file_paths = instance.ignore_source_directory_files.map do |file_name|
         File.join(instance.file_directory_path, "#{file_name}.#{code}.#{instance.file_type}")
       end
 
@@ -211,7 +191,7 @@ module Tagger
       invalid_files = other_locale_files_belongs_to_current_locale
 
       # Remove old release file for current locale
-      invalid_files << (current_locale_releases - current_locale_releases.sort.last(KEEP_RECENT_RELEASES_COUNT))
+      invalid_files << (current_locale_releases - current_locale_releases.sort.last(instance.keep_recent_releases))
 
       invalid_files.flatten.each do |file_path|
         FileUtils.rm_f(file_path)
@@ -296,7 +276,7 @@ module Tagger
     end
 
     # def blacklisted_phrases_keys
-    #   IGNORE_SOURCE_DIRECTORY_FILES.map do |file_name|
+    #   instance.ignore_source_directory_files.map do |file_name|
     #     load_locale_file(File.join(instance.file_directory_path, "#{file_name}.#{code}.#{instance.file_type}")).keys
     #   end.flatten
     # end
