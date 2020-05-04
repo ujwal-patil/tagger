@@ -10,6 +10,7 @@ module Tagger
 
   class NoInstanceConfiguredError < StandardError; end
   class NoInstanceFoundError < StandardError; end
+  class FileNotFoundError < StandardError; end
 
   # Your code goes here...
 

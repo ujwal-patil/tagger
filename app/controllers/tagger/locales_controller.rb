@@ -24,7 +24,21 @@ class Tagger::LocalesController < Tagger::BaseController
 	end
 
 	def upload
-		tagger_locale.upload(params[:file])
+    begin
+      word_counter = tagger_locale.upload(params[:file])
+      flash[:success] = {
+      	id: "message-#{tagger_locale.instance.name}-#{tagger_locale.code}", 
+      	message: "#{tagger_locale.code} File Uploaded successfully. Please note word counts. Added Word Count : #{word_counter.added_words},  Removed Word Count : #{word_counter.removed_words}."
+      }
+    rescue => e
+      message = params[:file].nil? ? 'Please choose a file.' : 'Please upload a valid file.'
+      flash[:error] = {
+      	id: "message-#{tagger_locale.instance.name}-#{tagger_locale.code}", 
+      	message: "There was an error processing your upload! #{message}"
+      }
+    end
+
+    redirect_to tagger_path
 	end
 
 	private

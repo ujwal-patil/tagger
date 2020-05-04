@@ -77,6 +77,10 @@ module Tagger
     end
 
     def upload(file)
+      if file.blank?
+        raise Tagger::FileNotFoundError.new("File not found!")
+      end
+
       # 1) Get file contents as full keys and values
       keys_and_values = load_full_keys_and_values(current_locale_file_path)
 
@@ -84,11 +88,8 @@ module Tagger
       old_version_keys_and_values = keys_and_values.clone
 
       # 3) Update existing key values with new file values
-      puts "Updating.."
-
       uploaded_file_key_values = load_full_keys_and_values(file.path)
       uploaded_file_key_values.each do |full_key, value|
-        print "."
         @word_counter.update(keys_and_values[full_key], value)
 
         keys_and_values[full_key] = value
@@ -102,7 +103,7 @@ module Tagger
         update_as_next_root_version(keys_and_values)
       end
 
-      display_word_count
+      @word_counter
     end
 
     def full_keys_and_values
@@ -114,7 +115,7 @@ module Tagger
     def create_tag_point(keys_and_values)
       tag_file_name = "#{tag_name}.#{Time.now.to_i}.#{hexdigest(keys_and_values)}.#{code}.#{instance.file_type}"
       tag_file_name = ::File.join(instance.file_directory_path, 'tags', tag_file_name)
-      keys_and_values_to_file(keys_and_values, tag_file_name)
+      keys_and_values_to_file(keys_and_values, tag_file_name, true)
       tag_file_name
     end
 
@@ -159,25 +160,29 @@ module Tagger
       keys_and_values_to_file(keys_and_values, recent_version_path)
     end
 
-    def keys_and_values_to_file(keys_and_values, to_file_path)
+    def keys_and_values_to_file(keys_and_values, to_file_path, save_as_full_keys=false)
       result = {}
-      keys_and_values.each do |dot_key, value|
-        h = result
+      if save_as_full_keys
+        result = keys_and_values
+      else
+        keys_and_values.each do |dot_key, value|
+          h = result
 
-        keys = if instance.file_type == :yml then
-          [code.to_s] + dot_key.split(".")
-        else
-          dot_key.split(".")
-        end
-
-        keys.each_with_index do |key, index|
-          h[key] = {} unless h.has_key?(key)
-          if index == keys.length - 1
-            h[key] = value
+          keys = if instance.file_type == :yml then
+            [code.to_s] + dot_key.split(".")
           else
-            h = h[key]
+            dot_key.split(".")
           end
-        end
+
+          keys.each_with_index do |key, index|
+            h[key] = {} unless h.has_key?(key)
+            if index == keys.length - 1
+              h[key] = value
+            else
+              h = h[key]
+            end
+          end
+        end        
       end
 
       final = if instance.file_type == :json

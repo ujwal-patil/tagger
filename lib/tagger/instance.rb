@@ -20,7 +20,7 @@ module Tagger
 		end
 
 		def locales
-			available_locale_codes.map do |locale|
+			available_locale_codes.sort.map do |locale|
 				Tagger::Locale.new(locale, self) if locale != 'en'
 			end.compact
 		end
