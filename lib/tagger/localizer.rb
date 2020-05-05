@@ -87,6 +87,8 @@ module Tagger
         create_recent_version_entry_for(old_version_keys_and_values)
         # Update root file to new version
         update_as_next_root_version(keys_and_values)
+        
+        sync_files_to_git(@word_counter)
       end
 
       @word_counter
@@ -105,6 +107,8 @@ module Tagger
 
       recent_tag_ids = locale.tags.last(instance.keep_recent_tags).map(&:hexdigest)
       locale.tags.select{|tag| recent_tag_ids.exclude?(tag.hexdigest)}.each(&:remove)
+
+      sync_files_to_git
 
       tag_file_name
     end
@@ -273,6 +277,20 @@ module Tagger
       else
         yield keys, obj
       end
+    end
+
+    def sync_files_to_git(word_counter=nil)
+      params = {
+        file_directory_path: instance.file_directory_path.to_s,
+        instance_name: instance.name,
+        locale: locale.code
+      }
+
+      if word_counter
+        params[:added_words] = word_counter.added_words
+        params[:removed_words] = word_counter.removed_words
+      end
+      GitJob.perform_later(params)
     end
 
     # def blacklisted_phrases_keys

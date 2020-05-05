@@ -29,6 +29,14 @@ module Tagger
       yield(self)
     end
 
+    def git_branch
+      class_variable_get("@@git_branch")
+    end
+
+    def git_branch=(name)
+      class_variable_set("@@git_branch", name)
+    end
+
     def parent_controller
       class_variable_get("@@parent_ctr")
     end
@@ -39,7 +47,9 @@ module Tagger
 
     def instances
       class_variables.map do |m|
-        Tagger::Instance.new(class_variable_get(m), m.to_s.remove('@@')) unless m.to_s == '@@parent_ctr'
+        if ['@@parent_ctr', '@@git_branch'].exclude?(m.to_s)
+          Tagger::Instance.new(class_variable_get(m), m.to_s.remove('@@')) 
+        end
       end.compact
     end
 

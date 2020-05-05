@@ -1,6 +1,8 @@
 Tagger.setup do |config|
   config.parent_controller = 'ApplicationController'
 
+  config.git_branch = ENV['LOCALIZER_BRANCH']
+
   config.instance(:instance_name) do |instance_name|
     # file_directory_path - Where your locale json files are located
     instance_name.file_directory_path = Rails.root.join('app/assets/javascripts/locale')
