@@ -5,13 +5,50 @@
 $(document).ready(function () {
 	initCustomFileInput();
 
-	$(".downoad-delta").on('click', function (event) {
+	$(".download-delta").on('click', function (event) {
 		event.stopPropagation();
+		var xhr;
+
 		if (event.target.dataset.target) {
 			var formTag = $(event.target.dataset.target).serialize();
-			event.target.href = `${event.target.dataset.url}?${formTag}`;
+			
+			xhr = $.ajax({
+		        url: `${event.target.href}?${formTag}&format=html`,
+		        method: 'GET',
+		        xhrFields: {
+		            responseType: 'text'
+		        },
+		        success: function (data) {
+		        	downloadFile(data);
+		        	$(event.target.dataset.body).load(event.target.dataset.url); 
+		        }
+		    });
+		}
+
+		return false;
+		
+		function downloadFile(data) {
+			var disposition = xhr.getResponseHeader('content-disposition');
+	        var matches = /"([^"]*)"/.exec(disposition);
+	        var filename = (matches != null && matches[1] ? matches[1] : 'file.json');
+
+	        if (filename.endsWith('.json')) {
+	        	data = JSON.stringify(data, null, 2)
+	        }
+
+		    const file = new File([data], { type: "application/json" });
+	       	var a = document.createElement('a');
+	        var url = window.URL.createObjectURL(file);
+	        a.href = url;
+	        a.download = filename;
+	        document.body.append(a);
+	        a.click();
+	        a.remove();
+	        window.URL.revokeObjectURL(url);
 		}
 	});
+
+
 })
 
 
@@ -29,3 +66,4 @@ function initCustomFileInput() {
 	  $(this).siblings(".custom-file-label").addClass("selected").html(fileName);
 	});
 }
+

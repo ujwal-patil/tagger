@@ -1,5 +1,4 @@
 class Tagger::LocalesController < Tagger::BaseController
-
 	def index
 		# @tags = Tagger::Locale.new(params[:locale], instance_name).tags
 	end
@@ -17,6 +16,17 @@ class Tagger::LocalesController < Tagger::BaseController
 		end
 
 		send_file(file_path, filename: filename)
+	end
+
+	def show
+		@tagger_locale = tagger_locale
+
+		render partial: 'tagger/locales/locale', 
+			locals: {
+				instance: @tagger_locale.instance, 
+				locale: @tagger_locale
+			},
+			layout: false
 	end
 
 	def complete
