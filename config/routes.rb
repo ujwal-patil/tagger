@@ -8,6 +8,10 @@ Rails.application.routes.draw do
 		      post :upload
 		    end
 		 	end
+
+		 	collection do
+		 		put :update
+		 	end
  		end
  	end
 

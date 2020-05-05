@@ -1,0 +1,10 @@
+var message, type;
+<% if @success %>
+	message = 'Successfully Updated with master changes.';
+	type = 'success'
+<% else %>
+	message = 'Failed to update changes from master.'
+	type = 'danger'
+<% end %>
+
+$('#update-master').html(`<div class="alert m-0 p-2 alert-${type}">${message}</div>`);

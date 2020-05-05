@@ -1,4 +1,15 @@
 <div class="container mt-3">
+	<div class="row mb-3">
+		<div class="col-md-9">
+			<span id="update-master"></span>
+		</div>
+		<div class="col-md-3">
+			<%= link_to tagger_instances_path, class: 'btn btn-outline-primary float-right', method: :put, remote: true, data: {disable_with: "<i class='zmdi zmdi-refresh mr-1 zmdi-hc-spin'></i> Updating please wait..."} do %>
+				<i class="zmdi zmdi-code mr-1"></i> Update Master Changes
+			<% end %>
+		</div>
+	</div>
+
 	<div class="row">
 		<div class="col">
 			<% Tagger.instances.each do |instance| %>
