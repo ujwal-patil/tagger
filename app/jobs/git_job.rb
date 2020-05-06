@@ -4,18 +4,20 @@ class GitJob < ActiveJob::Base
   def perform(*args)
   	Rails.logger.info("GitJob : #{args.first}")
   	options = args.first
-  	
-  	# 1) pull master changes
+  	# 1) checkout to tagger branch
+  	`git checkout #{Tagger.git_branch}`
+
+  	# 2) pull master changes
   	`git pull origin master`
 
   	if changes_available?(options[:file_directory_path]) && !Rails.env.development?
-	  	# 2) Add Source Directory Files
+	  	# 3) Add Source Directory Files
 	  	`git add #{options[:file_directory_path]}`
 
-	  	# 3) commit changes
+	  	# 4) commit changes
 	  	`git commit -m "#{commit_message(options)}"`
 
-	  	# 4) push changes
+	  	# 5) push changes
 	  	`git push origin #{Tagger.git_branch}`
   	end
   end
