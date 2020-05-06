@@ -8,7 +8,7 @@ class GitJob < ActiveJob::Base
   	`git checkout #{Tagger.git_branch}`
 
   	# 2) pull master changes
-  	`git pull origin master`
+  	# `git pull origin master`
 
   	if changes_available?(options[:file_directory_path]) && !Rails.env.development?
 	  	# 3) Add Source Directory Files
