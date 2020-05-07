@@ -8,39 +8,35 @@ class GitJob < ActiveJob::Base
   	Rails.logger.info("GitJob : Working Directory - #{`pwd`}")
 
   	# 1) checkout to tagger branch
-  	`git checkout #{Tagger.git_branch}`
+  	if !Rails.env.development? && system("git checkout #{Tagger.git_branch}")
+  		Rails.logger.info("GitJob : step-1 : checkout success ===========================================")
+	  	# 2) pull master changes
+	  	# `git pull origin master`
 
-  	Rails.logger.info("GitJob : step-1 : checkout success ===========================================")
+	  	if changes_available?(options[:file_directory_path])
+	  		Rails.logger.info("GitJob : step-2 : changes found ===========================================")
 
-  	# 2) pull master changes
-  	# `git pull origin master`
+		  	# 3) Add Source Directory Files
+		  	if system("git add #{options[:file_directory_path]}")
+	  			Rails.logger.info("GitJob : step-3 : File added ===========================================")
 
-  	if changes_available?(options[:file_directory_path]) && !Rails.env.development?
-  		Rails.logger.info("GitJob : step-2 : changes found ===========================================")
+			  	# 4) commit changes
+			  	if system("git commit -m '#{commit_message(options)}'")
+			  		Rails.logger.info("GitJob : step-4 : changes committed ===========================================")
 
-	  	# 3) Add Source Directory Files
-	  	`git add #{options[:file_directory_path]}`
+			  		# 5) pull changes
+				  	if system("git pull --no-edit origin #{Tagger.git_branch}")
+				  		Rails.logger.info("GitJob : step-5 : changes pulled ===========================================")
 
-  		Rails.logger.info("GitJob : step-3 : File added ===========================================")
-
-
-	  	# 4) commit changes
-	  	`git commit -m "#{commit_message(options)}"`
-
-  		Rails.logger.info("GitJob : step-4 : changes committed ===========================================")
-
-  		# 5) pull changes
-	  	`git pull --no-edit origin #{Tagger.git_branch}`
-  		
-  		Rails.logger.info("GitJob : step-5 : changes pulled ===========================================")
-
-
-	  	# 6) push changes
-	  	`git push origin #{Tagger.git_branch}`
-  		
-  		Rails.logger.info("GitJob : step-6 : changes pushed ===========================================")
-
-  	end
+					  	# 6) push changes
+					  	if system("git push origin #{Tagger.git_branch}")
+				  			Rails.logger.info("GitJob : step-6 : changes pushed ===========================================")
+					  	end				  		
+				  	end
+			  	end
+		  	end
+	  	end
+	  end
   end
 
   def commit_message(options)
