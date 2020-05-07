@@ -30,7 +30,7 @@ class GitJob < ActiveJob::Base
   		Rails.logger.info("GitJob : step-4 : changes committed ===========================================")
 
   		# 5) pull changes
-	  	`git pull origin #{Tagger.git_branch}`
+	  	`git pull --no-edit origin #{Tagger.git_branch}`
   		
   		Rails.logger.info("GitJob : step-5 : changes pulled ===========================================")
 

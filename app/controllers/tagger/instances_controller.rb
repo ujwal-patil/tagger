@@ -5,7 +5,7 @@ class Tagger::InstancesController < Tagger::BaseController
 	end
 
 	def update
-		@success = system('git pull origin master')
+		@success = system('git pull --no-edit origin master')
 	end
 
 end
