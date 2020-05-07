@@ -27,13 +27,18 @@ class GitJob < ActiveJob::Base
 	  	# 4) commit changes
 	  	`git commit -m "#{commit_message(options)}"`
 
-  		Rails.logger.info("GitJob : step-3 : changes committed ===========================================")
+  		Rails.logger.info("GitJob : step-4 : changes committed ===========================================")
+
+  		# 5) pull changes
+	  	`git pull origin #{Tagger.git_branch}`
+  		
+  		Rails.logger.info("GitJob : step-5 : changes pulled ===========================================")
 
 
-	  	# 5) push changes
+	  	# 6) push changes
 	  	`git push origin #{Tagger.git_branch}`
   		
-  		Rails.logger.info("GitJob : step-3 : changes pushed ===========================================")
+  		Rails.logger.info("GitJob : step-6 : changes pushed ===========================================")
 
   	end
   end
