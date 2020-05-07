@@ -4,6 +4,9 @@ class GitJob < ActiveJob::Base
   def perform(*args)
   	Rails.logger.info("GitJob : #{args.first}")
   	options = args.first
+
+  	Rails.logger.info("GitJob : Working Directory - #{`pwd`}")
+
   	# 1) checkout to tagger branch
   	`git checkout #{Tagger.git_branch}`
 
