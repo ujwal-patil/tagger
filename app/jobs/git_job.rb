@@ -7,18 +7,31 @@ class GitJob < ActiveJob::Base
   	# 1) checkout to tagger branch
   	`git checkout #{Tagger.git_branch}`
 
+  	Rails.logger.info("GitJob : step-1 : checkout success ===========================================")
+
   	# 2) pull master changes
   	# `git pull origin master`
 
   	if changes_available?(options[:file_directory_path]) && !Rails.env.development?
+  		Rails.logger.info("GitJob : step-2 : changes found ===========================================")
+
 	  	# 3) Add Source Directory Files
 	  	`git add #{options[:file_directory_path]}`
+
+  		Rails.logger.info("GitJob : step-3 : File added ===========================================")
+
 
 	  	# 4) commit changes
 	  	`git commit -m "#{commit_message(options)}"`
 
+  		Rails.logger.info("GitJob : step-3 : changes committed ===========================================")
+
+
 	  	# 5) push changes
 	  	`git push origin #{Tagger.git_branch}`
+  		
+  		Rails.logger.info("GitJob : step-3 : changes pushed ===========================================")
+
   	end
   end
 
