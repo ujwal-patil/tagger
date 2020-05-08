@@ -307,7 +307,7 @@ module Tagger
       }
 
       params[:track_file_paths] = _track_file_paths.map do |path|
-        path.remove("#{Rails.root}/")
+        path.remove("#{::Rails.root}/")
       end
 
       if word_counter
