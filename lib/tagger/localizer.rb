@@ -7,11 +7,12 @@ module Tagger
       @code = locale.code
       @word_counter = Tagger::WordCounter.new
 
+      @track_file_paths = []
       @current_file_version = fetch_current_file_version
       @current_file_path = current_locale_file_path
     end
 
-    attr_reader :current_file_version, :locale, :instance, :code
+    attr_reader :current_file_version, :locale, :instance, :code, :track_file_paths
 
     def delta(tag_id)
       tag_point_keys_and_values = {}
@@ -100,13 +101,24 @@ module Tagger
 
     private
 
+    def add_file_for_tracking(path)
+      if path.present?
+        track_file_paths << path
+      end
+    end
+
     def create_tag_point(keys_and_values)
       tag_file_name = "#{tag_name}.#{Time.now.to_i}.#{hexdigest(keys_and_values)}.#{code}.#{instance.file_type}"
       tag_file_name = ::File.join(instance.file_directory_path, 'tags', tag_file_name)
       keys_and_values_to_file(keys_and_values, tag_file_name, true)
 
       recent_tag_ids = locale.tags.last(instance.keep_recent_tags).map(&:hexdigest)
-      locale.tags.select{|tag| recent_tag_ids.exclude?(tag.hexdigest)}.each(&:remove)
+      locale.tags.each do |tag| 
+        if recent_tag_ids.exclude?(tag.hexdigest)
+          tag.remove
+          add_file_for_tracking(tag.file_path)
+        end
+      end
 
       sync_files_to_git
 
@@ -178,6 +190,10 @@ module Tagger
       File.open(to_file_path, "wb+") do |file|
         file.write(final)
       end
+
+      if File.exist?(to_file_path)
+        add_file_for_tracking(to_file_path)
+      end
     end
 
     def other_locale_files_belongs_to_current_locale
@@ -191,6 +207,8 @@ module Tagger
     def remove_invalid_files
       FileUtils.rm_f(@current_file_path)
 
+      add_file_for_tracking(@current_file_path)
+
       # Check for invalid files
       invalid_files = other_locale_files_belongs_to_current_locale
 
@@ -199,6 +217,7 @@ module Tagger
 
       invalid_files.flatten.each do |file_path|
         FileUtils.rm_f(file_path)
+        add_file_for_tracking(file_path)
         puts "\n\e[31mRemoved invalid file: #{file_path}\e[0m"
       end
     end
@@ -280,16 +299,21 @@ module Tagger
     end
 
     def sync_files_to_git(word_counter=nil)
+      _track_file_paths = track_file_paths.compact.uniq
+
+      return if _track_file_paths.blank?
+
       params = {
-        file_directory_path: instance.file_directory_path.to_s,
         instance_name: instance.name,
-        locale: locale.code
+        locale: locale.code,
+        track_file_paths: _track_file_paths
       }
 
       if word_counter
         params[:added_words] = word_counter.added_words
         params[:removed_words] = word_counter.removed_words
       end
+
       GitJob.perform_later(params)
     end
 

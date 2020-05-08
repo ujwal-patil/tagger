@@ -13,19 +13,19 @@ class GitJob < ActiveJob::Base
 	  	# 2) pull master changes
 	  	# `git pull origin master`
 
-	  	if changes_available?(options[:file_directory_path])
+	  	if changes_available?(options[:track_file_paths])
 	  		Rails.logger.info("GitJob : step-2 : changes found ===========================================")
 
 		  	# 3) Add Source Directory Files
-		  	if system("git add #{options[:file_directory_path]}")
+		  	if system("git add #{options[:track_file_paths].join(' ')}")
 	  			Rails.logger.info("GitJob : step-3 : File added ===========================================")
 
 			  	# 4) commit changes
 			  	if system("git commit -m '#{commit_message(options)}'")
 			  		Rails.logger.info("GitJob : step-4 : changes committed ===========================================")
 
-			  		# 5) pull changes
-				  	if system("git pull --no-edit origin #{Tagger.git_branch}")
+			  		# 6) reset cap script changes && pull changes
+				  	if system("git reset --hard") && system("git pull --no-edit origin #{Tagger.git_branch}")
 				  		Rails.logger.info("GitJob : step-5 : changes pulled ===========================================")
 
 					  	# 6) push changes
@@ -47,7 +47,7 @@ class GitJob < ActiveJob::Base
   	end
   end
 
-  def changes_available?(file_directory_path)
-  	`git status #{file_directory_path}`.exclude?('nothing to commit, working directory clean')
+  def changes_available?(track_file_paths)
+  	`git status #{track_file_paths.join(' ')}`.exclude?('nothing to commit, working directory clean')
   end
 end
