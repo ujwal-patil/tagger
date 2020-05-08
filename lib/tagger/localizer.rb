@@ -299,14 +299,16 @@ module Tagger
 
     def sync_files_to_git(word_counter=nil)
       _track_file_paths = track_file_paths.compact.uniq
-
       return if _track_file_paths.blank?
 
       params = {
         instance_name: instance.name,
-        locale: locale.code,
-        track_file_paths: _track_file_paths
+        locale: locale.code
       }
+
+      params[:track_file_paths] = _track_file_paths.map do |path|
+        path.remove("#{Rails.root}/")
+      end
 
       if word_counter
         params[:added_words] = word_counter.added_words
