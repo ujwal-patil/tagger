@@ -5,7 +5,7 @@
 $(document).ready(function () {
 	initCustomFileInput();
 
-	$(".download-delta").on('click', function (event) {
+	window.downloadDelta = function (event) {
 		event.stopPropagation();
 		var xhr;
 
@@ -13,7 +13,7 @@ $(document).ready(function () {
 			var formTag = $(event.target.dataset.target).serialize();
 			
 			xhr = $.ajax({
-		        url: `${event.target.href}?${formTag}&format=html`,
+		        url: `${event.target.dataset.delta}?${formTag}&format=html`,
 		        method: 'GET',
 		        xhrFields: {
 		            responseType: 'text'
@@ -46,9 +46,7 @@ $(document).ready(function () {
 	        a.remove();
 	        window.URL.revokeObjectURL(url);
 		}
-	});
-
-
+	}
 })
 
 

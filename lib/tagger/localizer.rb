@@ -50,7 +50,6 @@ module Tagger
           tag_file_for(tag_point_keys_and_values)
         end
       end
-     
     end
 
     def find_tag(tag_id)

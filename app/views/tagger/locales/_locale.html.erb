@@ -21,12 +21,14 @@
 	</div>
 	<div class="row">
 		<div class="col-md-3">
-			<%= link_to delta_tagger_instance_locale_path(instance_id: instance.name, id: locale.code),
+			<%= button_tag type: 'button',
 				class: 'btn btn-outline-primary download-delta',
+				onclick: "window.downloadDelta(event)",
+				'data-delta': delta_tagger_instance_locale_path(instance_id: instance.name, id: locale.code),
 				'data-url': tagger_instance_locale_path(instance_id: instance.name, id: locale.code),
 				'data-body': "#body-#{instance.name}-#{locale.code}",
 				'data-target': "#form-#{instance.name}-#{locale.code}" do %>
-				<i class="zmdi zmdi-download"></i> Delta
+					<i class="zmdi zmdi-download"></i> Delta
 			<% end %>
 		</div>
 		<div class="col-md-9">
