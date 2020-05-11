@@ -10,7 +10,7 @@ class Tagger::BaseController < Tagger.parent_controller.constantize
 	end
 
 	def authorize_tagger_user
-		unless Tagger::User.find_by(email: current_user.email)
+		unless Tagger::User.find_by(email: current_user&.email)
 			redirect_to root_path
 		end
 	end
