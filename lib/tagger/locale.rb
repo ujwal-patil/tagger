@@ -26,6 +26,10 @@ module Tagger
       Tagger::Localizer.new(self).delta(tag_id)
     end
 
+    def pending_status
+      Tagger::Localizer.new(self).pending_status
+    end
+
     def upload(file)
     	Tagger::Localizer.new(self).upload(file)
     end

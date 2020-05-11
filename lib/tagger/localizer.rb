@@ -52,6 +52,19 @@ module Tagger
       end
     end
 
+    def pending_status
+      en_keys_and_values = load_full_keys_and_values(current_locale_file_path('en'))
+      locale_keys_and_values = load_full_keys_and_values(current_locale_file_path)
+
+      count = 0
+
+      en_keys_and_values.each do |full_key, value|
+        count += 1 if (locale_keys_and_values[full_key].nil? || locale_keys_and_values[full_key] == value)
+      end
+
+      ((count.to_f / en_keys_and_values.keys.length.to_f) * 100).round(2)
+    end
+
     def find_tag(tag_id)
       locale.tags.find{|tag| tag.hexdigest == tag_id}
     end

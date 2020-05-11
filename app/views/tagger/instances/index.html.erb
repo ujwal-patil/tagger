@@ -30,6 +30,10 @@
 									<div class="row">
 										<div class="col-md-12">
 											<%= "#{instance.name.titleize} > #{locale.code}"  %>
+											<span class="badge badge-warning badge-pill">
+												<i class="zmdi zmdi-triangle-up"></i>
+												<%= "#{locale.pending_status} %" %>
+											</span>
 											<%= link_to complete_tagger_instance_locale_path(instance_id: instance.name, id: locale.code), class: 'btn btn-sm btn-outline-primary float-right ml-3' do %>
 												<i class="zmdi zmdi-download"></i>
 											<% end %>

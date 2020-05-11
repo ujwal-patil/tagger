@@ -20,7 +20,7 @@
 		</div>
 	</div>
 	<div class="row">
-		<div class="col-md-3">
+		<div class="col-md-6">
 			<%= button_tag type: 'button',
 				class: 'btn btn-outline-primary download-delta',
 				onclick: "window.downloadDelta(event)",
@@ -31,7 +31,7 @@
 					<i class="zmdi zmdi-download"></i> Delta
 			<% end %>
 		</div>
-		<div class="col-md-9">
+		<div class="col-md-6">
 			<div class="input-group">
 				<div class="custom-file">
 					<%= file_field_tag 'file', class: 'custom-file-input', id: "ig-#{instance.name}-#{locale.code}", accept: ".#{locale.code}.#{instance.file_type}" %>
