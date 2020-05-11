@@ -35,13 +35,14 @@ class Tagger::LocalesController < Tagger::BaseController
 
 	def upload
     begin
+    	ensure_valid_file?
       word_counter = tagger_locale.upload(params[:file])
       flash[:success] = {
       	id: "message-#{tagger_locale.instance.name}-#{tagger_locale.code}", 
       	message: "#{tagger_locale.code} File Uploaded successfully. Please note word counts. Added Word Count : #{word_counter.added_words},  Removed Word Count : #{word_counter.removed_words}."
       }
     rescue => e
-      message = params[:file].nil? ? 'Please choose a file.' : 'Please upload a valid file.'
+      message = params[:file].nil? ? 'Please choose a file.' : "Please upload a valid .#{tagger_locale.code}.#{tagger_locale.instance.file_type} file."
       flash[:error] = {
       	id: "message-#{tagger_locale.instance.name}-#{tagger_locale.code}", 
       	message: "There was an error processing your upload! #{message}"
@@ -52,6 +53,14 @@ class Tagger::LocalesController < Tagger::BaseController
 	end
 
 	private
+
+	def ensure_valid_file?
+		return if params[:file].blank?
+
+		unless params[:file].original_filename.end_with?(".#{tagger_locale.code}.#{tagger_locale.instance.file_type}")
+			raise Tagger::InvalidFileUploadError.new("Invalid File uploaded.")
+		end
+	end
 
 	def filename
 		"#{instance_name}-#{action_name}.#{locale}.#{tagger_locale.instance.file_type}"

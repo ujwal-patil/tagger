@@ -34,7 +34,7 @@
 		<div class="col-md-9">
 			<div class="input-group">
 				<div class="custom-file">
-					<%= file_field_tag 'file', class: 'custom-file-input', id: "ig-#{instance.name}-#{locale.code}" %>
+					<%= file_field_tag 'file', class: 'custom-file-input', id: "ig-#{instance.name}-#{locale.code}", accept: ".#{locale.code}.#{instance.file_type}" %>
 					
 					<label
 						class="custom-file-label"
