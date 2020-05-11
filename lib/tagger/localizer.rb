@@ -28,7 +28,8 @@ module Tagger
       end
 
       en_keys_and_values.each do |full_key, value|
-        if (locale_keys_and_values[full_key].nil? || locale_keys_and_values[full_key] == value)
+
+        if (locale_keys_and_values[full_key].nil? || comparable(locale_keys_and_values[full_key]) == comparable(value))
           tag_point_keys_and_values[full_key] = value
 
           unless from_tag_keys_and_values.has_key?(full_key)
@@ -59,7 +60,7 @@ module Tagger
       count = 0
 
       en_keys_and_values.each do |full_key, value|
-        count += 1 if (locale_keys_and_values[full_key].nil? || locale_keys_and_values[full_key] == value)
+        count += 1 if (locale_keys_and_values[full_key].nil? || comparable(locale_keys_and_values[full_key]) == comparable(value))
       end
 
       ((count.to_f / en_keys_and_values.keys.length.to_f) * 100).round(2)
@@ -112,6 +113,10 @@ module Tagger
     end
 
     private
+
+    def comparable(value)
+      value.to_s.downcase.gsub( /\s+/, "")
+    end
 
     def add_file_for_tracking(path)
       if path.present?
