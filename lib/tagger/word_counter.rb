@@ -1,6 +1,5 @@
 module Tagger
   class WordCounter
-
     def initialize
       @added_words = 0
       @removed_words = 0

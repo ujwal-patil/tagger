@@ -28,7 +28,6 @@ module Tagger
       end
 
       en_keys_and_values.each do |full_key, value|
-
         if (locale_keys_and_values[full_key].nil? || comparable(locale_keys_and_values[full_key]) == comparable(value))
           tag_point_keys_and_values[full_key] = value
 
