@@ -332,7 +332,7 @@ module Tagger
         params[:removed_words] = word_counter.removed_words
       end
 
-      GitJob.perform_later(params)
+      # GitJob.perform_later(params)
     end
 
     # def blacklisted_phrases_keys
