@@ -81,7 +81,7 @@ module Tagger
       end
 
       # 1) Get file contents as full keys and values
-      keys_and_values = load_full_keys_and_values(current_locale_file_path)
+      keys_and_values = load_full_keys_and_values(current_locale_file_path).compact
 
       # 2) clone current keys and values for recent version entry
       old_version_keys_and_values = keys_and_values.clone
