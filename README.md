@@ -1,9 +1,5 @@
 # Tagger
 
-Welcome to your new gem! In this directory, you'll find the files you need to be able to package up your Ruby library into a gem. Put your Ruby code in the file `lib/tagger`. To experiment with that code, run `bin/console` for an interactive prompt.
-
-TODO: Delete this and the text above, and describe your gem
-
 ## Installation
 
 Add this line to your application's Gemfile:
@@ -106,3 +102,12 @@ end
   ```ruby 
     <BASE_URL>/tagger 
   ```
+6) You can use the available portal to Download -> Translate the english delta -> Upload the translated file again to update translated strings
+  ![image](https://user-images.githubusercontent.com/28054599/184151631-665910b5-0db7-4a09-b0e1-badf115b4d60.png)
+
+7) There might be a problem you may face in large products like,
+
+   Ex. In Large products there are many sprints in ongoing development, but we do update translations only on querter basis 
+   so that will create conflicts problem while merging many received files from Translator Vendors, that issues also tagger will auto takes care
+   You can see the generated tags for the delta downloaded files, these are the recorded save points, which will auto take care your diff from 
+   various sprint releases. You can select any save point and download the delta file from a particular release point.
