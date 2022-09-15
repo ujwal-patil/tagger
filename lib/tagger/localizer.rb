@@ -292,7 +292,7 @@ module Tagger
         keys_and_values[_keys * '.'] = value
       end
 
-      keys_and_values
+      keys_and_values.compact
     end
 
     def current_locale_file_path(_code = nil)
