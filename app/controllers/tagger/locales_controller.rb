@@ -1,4 +1,6 @@
-class Tagger::LocalesController < Tagger::BaseController
+class Tagger::LocalesController < Tagger::ApplicationController
+  include Tagger::Engine.routes.url_helpers
+
   def index
     # @tags = Tagger::Locale.new(params[:locale], instance_name).tags
   end

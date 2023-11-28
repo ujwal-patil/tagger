@@ -1,62 +1,62 @@
 <div class="container mt-3">
-	<div class="row mb-3 ">
-		<% if false %>
-			<div class="col-md-9">
-				<span id="update-master"></span>
-			</div>
-			<div class="col-md-3">
-				<%= link_to tagger_instances_path, class: 'btn btn-outline-primary float-right', method: :put, remote: true, data: {disable_with: "<i class='zmdi zmdi-refresh mr-1 zmdi-hc-spin'></i> Updating please wait..."} do %>
-					<i class="zmdi zmdi-code mr-1"></i> Update Master Changes
-				<% end %>
-			</div>
-		<% end %>
-		<div class="col-md-12 mt-2">
-			<div class="alert alert-info">
-				<i class="zmdi zmdi-alert-triangle"></i>
-				Make sure the master branch changes are updated with localizer branch before downloading delta.
-				<br>
-				<b>Quick Links</b>
-				<ul>
-					<li><a href="https://jsonlint.com/" target="_blank">JSON Validator</a></li>
-					<li><a href="http://www.yamllint.com/" target="_blank">YAML Validator</a></li>
-				</ul>
-			</div>
-		</div>
-	</div>
+    <div class="row mb-3 ">
+        <% if false %>
+            <div class="col-md-9">
+                <span id="update-master"></span>
+            </div>
+            <div class="col-md-3">
+                <%= link_to instances_path, class: 'btn btn-outline-primary float-right', method: :put, remote: true, data: {disable_with: "<i class='zmdi zmdi-refresh mr-1 zmdi-hc-spin'></i> Updating please wait..."} do %>
+                    <i class="zmdi zmdi-code mr-1"></i> Update Master Changes
+                <% end %>
+            </div>
+        <% end %>
+        <div class="col-md-12 mt-2">
+            <div class="alert alert-info">
+                <i class="zmdi zmdi-alert-triangle"></i>
+                Make sure the master branch changes are updated with localizer branch before downloading delta.
+                <br>
+                <b>Quick Links</b>
+                <ul>
+                    <li><a href="https://jsonlint.com/" target="_blank">JSON Validator</a></li>
+                    <li><a href="http://www.yamllint.com/" target="_blank">YAML Validator</a></li>
+                </ul>
+            </div>
+        </div>
+    </div>
 
-	<div class="row">
-		<div class="col">
-			<% Tagger.instances.each do |instance| %>
-				<div class="card mb-3">
-					<div class="card-header"><%= instance.name.titleize %></div>
-					<div class="card-body">
-						<% instance.locales.each do |locale| %>
-							<div class="card mb-3">
-								<div class="card-header">
-									<div class="row">
-										<div class="col-md-12">
-											<%= "#{instance.name.titleize} > #{locale.code}"  %>
-											<span class="badge badge-warning badge-pill">
-												<i class="zmdi zmdi-triangle-up"></i>
-												<%= "#{locale.pending_status} %" %>
-											</span>
-											<%= link_to complete_tagger_instance_locale_path(instance_id: instance.name, id: locale.code), class: 'btn btn-sm btn-outline-primary float-right ml-3' do %>
-												<i class="zmdi zmdi-download"></i>
-											<% end %>
-											<span class="float-right" id="<%= "message-#{instance.name}-#{locale.code}" %>">
-												<%= flash_message("message-#{instance.name}-#{locale.code}") %>
-											</span>
-										</div>
-									</div>
-								</div>
-								<div class="card-body" id="<%= "body-#{instance.name}-#{locale.code}" %>">
-									<%= render(partial: 'tagger/locales/locale', locals: {instance: instance, locale: locale})%>
-								</div>
-							</div>
-						<% end %>
-					</div>
-				</div>
-			<% end %>
-		</div>
-	</div>
+    <div class="row">
+        <div class="col">
+            <% Tagger.instances.each do |instance| %>
+                <div class="card mb-3">
+                    <div class="card-header"><%= instance.name.titleize %></div>
+                    <div class="card-body">
+                        <% instance.locales.each do |locale| %>
+                            <div class="card mb-3">
+                                <div class="card-header">
+                                    <div class="row">
+                                        <div class="col-md-12">
+                                            <%= "#{instance.name.titleize} > #{locale.code}"  %>
+                                            <span class="badge badge-warning badge-pill">
+                                                <i class="zmdi zmdi-triangle-up"></i>
+                                                <%= "#{locale.pending_status} %" %>
+                                            </span>
+                                            <%= link_to complete_instance_locale_path(instance_id: instance.name, id: locale.code), class: 'btn btn-sm btn-outline-primary float-right ml-3' do %>
+                                                <i class="zmdi zmdi-download"></i>
+                                            <% end %>
+                                            <span class="float-right" id="<%= "message-#{instance.name}-#{locale.code}" %>">
+                                                <%= flash_message("message-#{instance.name}-#{locale.code}") %>
+                                            </span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="card-body" id="<%= "body-#{instance.name}-#{locale.code}" %>">
+                                    <%= render(partial: 'tagger/locales/locale', locals: {instance: instance, locale: locale})%>
+                                </div>
+                            </div>
+                        <% end %>
+                    </div>
+                </div>
+            <% end %>
+        </div>
+    </div>
 </div>

@@ -4,11 +4,10 @@ require "tagger/tag"
 require "tagger/instance"
 require "tagger/localizer"
 require "tagger/locale"
-require "tagger/rails/engine"
+require "tagger/engine"
 
 module Tagger
   class Error < StandardError; end
-
   class NoInstanceConfiguredError < StandardError; end
   class NoInstanceFoundError < StandardError; end
   class FileNotFoundError < StandardError; end
@@ -46,9 +45,17 @@ module Tagger
       class_variable_set("@@parent_ctr", name)
     end
 
+    def authorizer=(name='authorize_tagger_user')
+      class_variable_set("@@authorizer", name)
+    end
+
+    def authorizer
+      class_variable_get("@@authorizer")
+    end
+
     def instances
       class_variables.map do |m|
-        if ['@@parent_ctr', '@@git_branch'].exclude?(m.to_s)
+        if ['@@parent_ctr', '@@git_branch', '@@authorizer'].exclude?(m.to_s)
           Tagger::Instance.new(class_variable_get(m), m.to_s.remove('@@')) 
         end
       end.compact

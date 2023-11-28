@@ -7,10 +7,10 @@ class TaggerGenerator < Rails::Generators::Base
     copy_file initializer_location, initializer_location
   end
 
-  def create_migrations
-    create_taggger_users = "db/migrate/create_tagger_users.rb"
-    migration_template create_taggger_users, create_taggger_users
-  end
+  # def create_migrations
+  #   create_taggger_users = "db/migrate/create_tagger_users.rb"
+  #   migration_template create_taggger_users, create_taggger_users
+  # end
 
   def self.next_migration_number(path)
     sleep 1 # migration numbers should differentiate

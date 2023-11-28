@@ -1,7 +1,6 @@
-class Tagger::BaseController < Tagger.parent_controller.constantize
-  layout "tagger"
-
+class Tagger::ApplicationController < Tagger.parent_controller.constantize
   before_action :authorize_tagger_user
+  layout "tagger/application" 
 
   protected
   
@@ -10,8 +9,6 @@ class Tagger::BaseController < Tagger.parent_controller.constantize
   end
 
   def authorize_tagger_user
-    unless Tagger::User.find_by(email: current_user&.email)
-      redirect_to root_path
-    end
+    defined?(super) && super
   end
 end

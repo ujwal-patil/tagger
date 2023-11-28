@@ -1,5 +1,6 @@
-class Tagger::InstancesController < Tagger::BaseController
-
+class Tagger::InstancesController < Tagger::ApplicationController
+  include Tagger::Engine.routes.url_helpers
+  
   def index
     
   end
