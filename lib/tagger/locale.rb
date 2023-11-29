@@ -18,7 +18,7 @@ class Tagger::Locale
   end
 
   def available_tag_files
-    Dir[::File.join(instance.tags_directory, "*.#{code}.#{instance.file_type}")]
+    Dir[::File.join(instance.tags_directory, "*.#{code}.#{'json'}")]
   end
   
   def delta(tag_id)
@@ -31,6 +31,10 @@ class Tagger::Locale
 
   def upload(file)
     Tagger::Localizer.new(self).upload(file)
+  end
+
+  def complete_json
+    Tagger::Localizer.new(self).full_keys_and_values
   end
 
   def current_file_path

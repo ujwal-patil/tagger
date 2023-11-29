@@ -70,7 +70,7 @@ class Tagger::Localizer
 
   def tag_file_for(keys_and_values)
     hex = hexdigest(keys_and_values)
-    tags_directory = ::File.join(instance.tags_directory, "*.#{hex}.#{code}.#{instance.file_type}")
+    tags_directory = ::File.join(instance.tags_directory, "*.#{hex}.#{code}.#{'json'}")
     Dir[tags_directory].first
   end
 
@@ -81,15 +81,12 @@ class Tagger::Localizer
 
     # 1) Get file contents as full keys and values
     keys_and_values = load_full_keys_and_values(current_locale_file_path).compact
-
     # 2) clone current keys and values for recent version entry
     old_version_keys_and_values = keys_and_values.clone
-
     # 3) Update existing key values with new file values
     uploaded_file_key_values = load_full_keys_and_values(file.path)
     uploaded_file_key_values.each do |full_key, value|
       @word_counter.update(keys_and_values[full_key], value)
-
       keys_and_values[full_key] = value
     end
 
@@ -123,7 +120,7 @@ class Tagger::Localizer
   end
 
   def create_tag_point(keys_and_values)
-    tag_file_name = "#{tag_name}.#{Time.now.to_i}.#{hexdigest(keys_and_values)}.#{code}.#{instance.file_type}"
+    tag_file_name = "#{tag_name}.#{Time.now.to_i}.#{hexdigest(keys_and_values)}.#{code}.#{'json'}"
     tag_file_name = ::File.join(instance.file_directory_path, 'tags', tag_file_name)
     keys_and_values_to_file(keys_and_values, tag_file_name, true)
 
@@ -150,7 +147,7 @@ class Tagger::Localizer
 
   # t1.<hexdigest>.en.json
   def available_hexdigests
-    tags_directory = ::File.join(instance.tags_directory, "*.#{code}.#{instance.file_type}")
+    tags_directory = ::File.join(instance.tags_directory, "*.#{code}.#{'json'}")
     Dir[tags_directory].map do |tag_file_path|
       tag_file_path.remove(instance.tags_directory).split('.').third
     end
@@ -177,7 +174,7 @@ class Tagger::Localizer
       result = keys_and_values
     else
       keys_and_values.each do |dot_key, value|
-        h = result
+        hhh = result
 
         keys = if instance.file_type == :yml then
           [code.to_s] + dot_key.split(".")
@@ -186,19 +183,20 @@ class Tagger::Localizer
         end
 
         keys.each_with_index do |key, index|
-          h[key] = {} unless h.has_key?(key)
+          hhh[key] = {} unless hhh.has_key?(key)
+
           if index == keys.length - 1
-            h[key] = value
+            hhh[key] = value
           else
-            h = h[key]
+            hhh = hhh[key]
           end
         end
       end        
     end
 
-    final = if instance.file_type == :json
+    final = if to_file_path.end_with?('.json')
       JSON.pretty_generate(result)
-    elsif instance.file_type == :yml
+    elsif to_file_path.end_with?('.yml')
       YAML.dump(result)
     end
 
@@ -272,11 +270,10 @@ class Tagger::Localizer
   def load_full_keys_and_values(file_path)
     json = {}
     keys_and_values = {}
-
     begin
-      json = if instance.file_type == :json
+      json = if file_path.end_with?('.json')
         JSON.parse(File.read(file_path))
-      elsif instance.file_type == :yml
+      elsif file_path.end_with?('.yml')
         YAML.load_file(file_path)
       end
 
@@ -287,7 +284,11 @@ class Tagger::Localizer
     traverse(json) do |keys, value|
       keys = keys.map{|m| m.split('.')}.flatten
 
-      _keys = (instance.file_type == :yml ? keys[1..-1] : keys)
+      _keys = if file_path.end_with?('.yml')
+          keys[1..-1]
+        else
+          keys
+        end
       keys_and_values[_keys * '.'] = value
     end
 

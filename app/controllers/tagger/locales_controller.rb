@@ -32,7 +32,10 @@ class Tagger::LocalesController < Tagger::ApplicationController
   end
 
   def complete
-    send_file(tagger_locale.current_file_path, filename: filename)
+    temp = Tempfile.new
+    temp.puts(JSON.pretty_generate(tagger_locale.complete_json))
+    temp.flush
+    send_file(temp.path, filename: filename)
   end
 
   def upload
@@ -44,14 +47,13 @@ class Tagger::LocalesController < Tagger::ApplicationController
         message: "#{tagger_locale.code} File Uploaded successfully. Please note word counts. Added Word Count : #{word_counter.added_words},  Removed Word Count : #{word_counter.removed_words}."
       }
     rescue => e
-      message = params[:file].nil? ? 'Please choose a file.' : "Please upload a valid .#{tagger_locale.code}.#{tagger_locale.instance.file_type} file."
+      message = params[:file].nil? ? 'Please choose a file.' : "Please upload a valid .#{tagger_locale.code}.#{'json'} file."
       flash[:error] = {
         id: "message-#{tagger_locale.instance.name}-#{tagger_locale.code}", 
         message: "There was an error processing your upload! #{message}"
       }
     end
-
-    redirect_to tagger_path
+    redirect_to request.referrer
   end
 
   private
@@ -59,13 +61,13 @@ class Tagger::LocalesController < Tagger::ApplicationController
   def ensure_valid_file?
     return if params[:file].blank?
 
-    unless params[:file].original_filename.end_with?(".#{tagger_locale.code}.#{tagger_locale.instance.file_type}")
+    unless params[:file].original_filename.end_with?(".#{tagger_locale.code}.#{'json'}")
       raise Tagger::InvalidFileUploadError.new("Invalid File uploaded.")
     end
   end
 
   def filename
-    "#{action_name}.#{tagger_locale.instance.name}.#{locale}.#{tagger_locale.instance.file_type}"
+    "#{action_name}.#{tagger_locale.instance.name}.#{locale}.json"
   end
 
   def tagger_locale
