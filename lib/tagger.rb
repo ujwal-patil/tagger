@@ -50,7 +50,7 @@ module Tagger
     end
 
     def authorizer
-      class_variable_get("@@authorizer")
+      class_variable_get("@@authorizer") rescue nil
     end
 
     def instances
